@@ -12,16 +12,16 @@ Require Export Basics_J.
 (* For it to work, you need to use [coqc] to compile [Basics.v]
     into [Basics.vo].  (This is like making a .class file from a .java
     file, or a .o file from a .c file.)
-  
+
     Here are two ways to compile your code:
-  
+
      - CoqIDE:
-   
+
          Open Basics.v.
          In the "Compile" menu, click on "Compile Buffer".
-   
+
      - Command line:
-   
+
          Run [coqc Basics.v]
 
     In this file, we again use the [Module] feature to wrap all of the
@@ -221,7 +221,7 @@ Definition l_123''' := [1,2,3].
     For example, since we defined [+] as infix notation for the [plus]
     function at level 50,
 [[
-Notation "x + y" := (plus x y)  
+Notation "x + y" := (plus x y)
                     (at level 50, left associativity).
 ]]
    The [+] operator will bind tighter than [::], so [1 + 2 :: [3]]
@@ -644,7 +644,7 @@ Proof.
 (** 蒸し返すようですが、この Coq の証明はこうして単に静的なテキストとして読んでいる限り、さほど明白で分かりやすいものではありません。 Coq の証明は、 Coq を対話的に動かしながらポイントごとに「現在のゴールは何か」「コンテキストに何が出ているか」を見て、証明が今どうなっているかを読み下していくことで理解されるようになっています。しかし、このような証明の途中経過は、全てが証明結果として書き出されるわけではありません。だからこそ、人間向けの自然言語での証明には証明の筋道がわかるように証明の指針を書いておく必要があるのです。特に、読者が流れを見失わないよう、ふたつめの場合分けで使う帰納法の仮定が何だったのかわかるようにしておくのは有益なはずです。
    *)
 
-(* _Theorem_: For all lists [l1], [l2], and [l3], 
+(* _Theorem_: For all lists [l1], [l2], and [l3],
    [(l1 ++ l2) ++ l3 = l1 ++ (l2 ++ l3)].
 
    _Proof_: By induction on [l1].
@@ -662,7 +662,7 @@ Proof.
      (the induction hypothesis). We must show
 [[
        ((n :: l1') ++ l2) ++ l3 = (n :: l1') ++ (l2 ++ l3).
-]]  
+]]
      By the definition of [++], this follows from
 [[
        n :: ((l1' ++ l2) ++ l3) = n :: (l1' ++ (l2 ++ l3)),
@@ -785,11 +785,11 @@ Proof.
     simpl. rewrite -> length_snoc.
     rewrite -> IHl'. reflexivity.  Qed.
 
-(* For comparison, here are _informal_ proofs of these two theorems: 
+(* For comparison, here are _informal_ proofs of these two theorems:
 
     _Theorem_: For all numbers [n] and lists [l],
        [length (snoc l n) = S (length l)].
- 
+
     _Proof_: By induction on [l].
 
     - First, suppose [l = []].  We must show
@@ -811,7 +811,7 @@ Proof.
       follows from
 [[
         S (length (snoc l' n)) = S (S (length l')),
-]] 
+]]
       which is immediate from the induction hypothesis. [] *)
 (** 対比として、この二つの定理の非形式的な証明を見てみましょう
 
@@ -841,16 +841,16 @@ Proof.
       これは帰納法の仮定から明らかである。 [] *)
 
 (* _Theorem_: For all lists [l], [length (rev l) = length l].
-    
-    _Proof_: By induction on [l].  
+
+    _Proof_: By induction on [l].
 
       - First, suppose [l = []].  We must show
 [[
           length (rev []) = length [],
 ]]
-        which follows directly from the definitions of [length] 
+        which follows directly from the definitions of [length]
         and [rev].
-    
+
       - Next, suppose [l = n::l'], with
 [[
           length (rev l') = length l'.
@@ -1267,11 +1267,11 @@ Theorem silly1 : forall (n m o p : nat),
 Proof.
   intros n m o p eq1 eq2.
   rewrite <- eq1.
-  (* At this point, we could finish with 
+  (* At this point, we could finish with
      "[rewrite -> eq2. reflexivity.]"
-     as we have done several times above.  
-     But we can achieve the same effect in 
-     a single step by using the [apply] tactic 
+     as we have done several times above.
+     But we can achieve the same effect in
+     a single step by using the [apply] tactic
      instead: *)
   (* このような場合は、
      "[rewrite -> eq2. reflexivity.]"
@@ -1359,8 +1359,8 @@ Theorem silly3 : forall (n : nat),
 Proof.
   intros n H.
   symmetry.
-  simpl. (* Actually, this [simpl] is unnecessary, since 
-            [apply] will do a [simpl] step first. *)  
+  simpl. (* Actually, this [simpl] is unnecessary, since
+            [apply] will do a [simpl] step first. *)
   (* この [simpl] は必須ではありません。 [apply] は最初に [simpl] をします。 *)
   apply H.  Qed.
 
@@ -1554,4 +1554,3 @@ End Dictionary.
    次の宣言で、 [beq_nat_sym] の定義をトップレベルの名前空間に置いておきます。こうすることで、後で [beq_nat_sym] を使うのに [NatList.beq_nat_sym] と書かずに済みます。 *)
 
 Definition beq_nat_sym := NatList.beq_nat_sym.
-

@@ -307,12 +307,15 @@ Proof. simpl. reflexivity.  Qed.
     これをCoqでの定義に書き直しなさい。 *)
 
 Fixpoint factorial (n:nat) : nat :=
-  (* FILL IN HERE *) admit.
+  match n with
+    | O => S O
+    | S n' => mult n (factorial n')
+  end.
 
 Example test_factorial1:          (factorial 3) = 6.
-(* FILL IN HERE *) Admitted.
+Proof. simpl. reflexivity. Qed.
 Example test_factorial2:          (factorial 5) = (mult 10 12).
-(* FILL IN HERE *) Admitted.
+Proof. simpl. reflexivity. Qed.
 (** [] *)
 
 (** ここで紹介する"notation"（表記法）という機能を使うことで、加算、減算、乗算のような数値を扱う式をずっと読みやすく、書きやすくすることができます。 *)
@@ -520,6 +523,11 @@ Proof.
   intros n. destruct n as [| n'].
     reflexivity.
     reflexivity.  Qed.
+
+Theorem plus_1_neq_0' : forall n : nat,
+  beq_nat (n + 1) 0 = false.
+Proof.
+  intros n. destruct n as [| n']; reflexivity. Qed.
 
 (** [destruct]タクティックは二つのサブゴールを作ります。その両方を別々に、Coqを使って定理として証明していくことになります。一つのサブゴールからもう一つへ移動するための特別なコマンドは必要ありません。一つ目のサブゴールが証明されれば、それは消えて自動的にもう一つのサブゴールにフォーカスが移ります。この証明では、二つに分かれたサブゴールのいずれも[reflexivity]を1回使うだけで簡単に証明できます。
 

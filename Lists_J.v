@@ -554,9 +554,6 @@ Proof. reflexivity. Qed.
     with a theorem which is true, but whose proof requires techniques
     you haven't learned yet.  Feel free to ask for help if you get
     stuck!
-
-(* FILL IN HERE *)
-[]
  *)
 (**
    [count] や [add] を使ったバッグに関する面白い定理を書き、それを証明しなさい。この問題はいわゆる自由課題で、真になることがわかっていても、証明にはまだ習っていない技を使わなければならない定理を思いついてしまうこともあります。証明に行き詰まってしまったら気軽に質問してください。
@@ -566,6 +563,7 @@ Theorem count_add_bag :
   forall (v : nat) (s : bag), count v (add v s) = 1 + count v s.
 Proof.
   intros v s. simpl. rewrite <- beq_nat_refl. reflexivity. Qed.
+(** [] *)
 
 
 (* * Reasoning About Lists *)
@@ -1655,8 +1653,6 @@ Qed.
    Theorem: For any [nat]s [n] [m], [beq_nat n m = beq_nat m n].
 
    Proof:
-   (* FILL IN HERE *)
-[]
  *)
 (** **** 練習問題: ★★★, recommended (beq_nat_sym_informal) *)
 (** 以下の補題について上の証明と対応する非形式的な証明を書きなさい。 *)

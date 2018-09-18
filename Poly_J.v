@@ -1229,8 +1229,9 @@ Inductive grumble (X:Type) : Type :=
       - [e mumble (b c 0)]
       - [e bool (b c 0)]
       - [c]
+ *)
 (* FILL IN HERE *)
-[] *)
+(** [] *)
 
 (** **** 練習問題: ★★, optional (baz_num_elts) *)
 (** 次の、機能的に定義された型をよく観察してください。 *)
@@ -1239,9 +1240,9 @@ Inductive baz : Type :=
    | x : baz -> baz
    | y : baz -> bool -> baz.
 
-(** 型[baz]はいくつの要素を持つことができるでしょうか？
+(** 型[baz]はいくつの要素を持つことができるでしょうか？ *)
 (* FILL IN HERE *)
-[] *)
+(** [] *)
 
 End MumbleBaz.
 

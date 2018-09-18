@@ -204,7 +204,22 @@ Theorem plus_n_n_injective_take2 : forall n m,
      n + n = m + m ->
      n = m.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n m H.
+  generalize dependent n.
+  induction m as [| m'].
+  (* m = 0 *) destruct n as [| n'].
+    (* n = 0 *) reflexivity.
+    (* n = S n' *)
+      intros eq. inversion eq.
+  (* m = S m' *) destruct n as [| n'].
+    (* n = 0 *) intros eq. inversion eq.
+    (* n = S n' *)
+      intros eq. inversion eq.
+      rewrite <- plus_n_Sm in H0. rewrite <- plus_n_Sm in H0.
+      inversion H0.
+      rewrite <- (IHm' n' H1).
+      reflexivity.
+Qed.
 
 (** [l]に関する帰納法で示しなさい。 *)
 
@@ -212,7 +227,22 @@ Theorem index_after_last: forall (n : nat) (X : Type) (l : list X),
      length l = n ->
      index (S n) l = None.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n X l. generalize dependent n.
+  induction l as [| x l'].
+  (* l = [] *)
+    destruct n as [| n'].
+    (* n = O *) reflexivity.
+    (* n = S n' *)
+      intros eq. inversion eq.
+  (* l = x :: l' *)  (* simpl. intros n eq. rewrite <- eq. apply IHl'. *)
+    destruct n as [| n'].
+    (* n = O *)
+      intros eq. inversion eq.
+    (* n = S n' *)
+      intros eq. inversion eq.
+      apply IHl'.
+      reflexivity.
+Qed.
 (** [] *)
 
 (** **** 練習問題: ★★★, optional (index_after_last_informal) *)
@@ -221,7 +251,29 @@ Proof.
      _Theorem_: すべてのSet [X], リスト [l : list X], 自然数[n]に対して、[length l = n] ならば [index (S n) l = None]。
 
      _Proof_:
-     (* FILL IN HERE *)
+
+  任意のリスト l について、帰納法を適用する
+    l が [] のとき、
+      さらに n が O のときは
+        length [] = O -> @index X (S O) [] = None
+          となり成立する。
+
+      さらに n が S n' のときは
+        length [] = S n' -> @index X (S n') [] = None
+          これは前提が成立しないので成立する。
+    l が x :: l' であり、
+      forall n, length l' = n -> @index X (S n) l' = None
+      が帰納法の仮定で成立しているとする
+
+      さらに n が O のときは
+        length (x :: l') = O -> @index X (S O) (x :: l') = None
+          これは前提が成立しないので成立する。
+      さらに n が S n' のときは
+        length (x :: l') = S n' -> @index X (S (S n')) (x :: l') = None
+          前提を length の定義で置き換え、
+          結果を index  の定義で置き換えると、
+        length l' = n' -> @index X (S n') l' = None
+          これは帰納法の仮定から成立する。
 []
 *)
 
@@ -233,7 +285,20 @@ Theorem length_snoc''' : forall (n : nat) (X : Type)
      length l = n ->
      length (snoc l v) = S n.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n X v l. generalize dependent n.
+  induction l as [|x l'].
+  (* l = [] *)
+    intros n eq. simpl in eq. rewrite <- eq.
+    reflexivity.
+  (* l = x :: l' *)
+    simpl.
+    destruct n as [| n'].
+    (* n = O *) intros eq. inversion eq.
+    (* n = S n' *)
+      intros eq. inversion eq.
+      rewrite -> (IHl' n' H0). rewrite -> H0.
+      reflexivity.
+Qed.
 (** [] *)
 
 (** **** 練習問題: ★★★, optional (app_length_cons) *)
@@ -244,15 +309,55 @@ Theorem app_length_cons : forall (X : Type) (l1 l2 : list X)
      length (l1 ++ (x :: l2)) = n ->
      S (length (l1 ++ l2)) = n.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros X l1 l2 x n. generalize dependent n.
+  induction l1 as [| x1 l1'].
+  (* l1 = [] *)
+    simpl. intros n eq. apply eq.
+  (* l1 = x1 :: l1' *)
+     destruct n as [| n'].
+     (* n = O *) intros eq. inversion eq.
+     (* n = S n' *)
+       simpl. intros eq. inversion eq.
+       rewrite -> (IHl1' n' H0). rewrite -> H0.
+       reflexivity.
+Qed.
 (** [] *)
 
 (** **** 練習問題: ★★★★, optional (app_length_twice) *)
 (** [app_length]を使わずに[l]に関する帰納法で示しなさい。 *)
 
+Lemma app_length_cons_eq :
+  forall (X : Type) (l1 l2 : list X) (x : X),
+    length (l1 ++ (x :: l2)) = S (length (l1 ++ l2)).
+Proof.
+  intros.
+  induction l1 as [| x' l1'].
+  (* l1 = [] *) reflexivity.
+  (* l1 = x' :: l1' *)
+    simpl. rewrite <- IHl1'.
+    reflexivity.
+Qed.
+
 Theorem app_length_twice : forall (X:Type) (n:nat) (l:list X),
      length l = n ->
      length (l ++ l) = n + n.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros X n l. generalize dependent n.
+  induction l as [| x l'].
+  (* l = [] *)
+    simpl. intros n eq. rewrite <- eq.
+    reflexivity.
+  (* l = x :: l' *)
+    intros n eq.
+    destruct n as [| n'].
+    (* n = O *) inversion eq.
+    (* n = S n' *)
+      inversion eq.
+      rewrite -> H0.
+      simpl.
+      rewrite <- plus_n_Sm.
+      rewrite -> app_length_cons_eq.
+      rewrite -> (IHl' n' H0).
+      reflexivity.
+Qed.
 (** [] *)

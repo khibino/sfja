@@ -1288,6 +1288,6 @@ End MumbleBaz.
 [[
    forall X n l, length l = n -> @index X (S n) l = None.
 ]]
+ *)
 (* FILL IN HERE *)
-*)
 (** [] *)

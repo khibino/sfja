@@ -210,30 +210,39 @@ Definition list123''' := [1, 2, 3].
 (** ここにあるいくつかの練習問題は、List_J.vにあったものと同じですが、多相性の練習になります。以下の定義を行い、証明を完成させなさい。 *)
 
 Fixpoint repeat (X : Type) (n : X) (count : nat) : list X :=
-  (* FILL IN HERE *) admit.
+  match count with
+    | O => []
+    | S count' =>  n :: repeat X n count'
+  end.
 
 Example test_repeat1:
   repeat bool true 2 = cons true (cons true nil).
- (* FILL IN HERE *) Admitted.
+Proof. reflexivity. Qed.
 
 Theorem nil_app : forall X:Type, forall l:list X,
   app [] l = l.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  reflexivity. Qed.
 
 Theorem rev_snoc : forall X : Type,
                      forall v : X,
                      forall s : list X,
   rev (snoc s v) = v :: (rev s).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  induction s as [| x s'].
+  Case "s = []". reflexivity.
+  Case "s = cons x s'".
+    simpl. rewrite -> IHs'. reflexivity. Qed.
 
 Theorem snoc_with_append : forall X : Type,
                          forall l1 l2 : list X,
                          forall v : X,
   snoc (l1 ++ l2) v = l1 ++ (snoc l2 v).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  induction l1 as [| x l1'].
+  Case "s = []". reflexivity.
+  Case "s = x :: l1'".
+    simpl. intros l2 v. rewrite -> IHl1'. reflexivity. Qed.
 (** [] *)
 
 
@@ -300,14 +309,20 @@ Fixpoint combine' {X Y : Type} (lx : list X) (ly : list Y)
 (** **** 練習問題: ★★, recommended (split) *)
 (** [split]関数は[combine]と全く逆で、ペアのリストを引数に受け取り、リストのペアを返します。多くの関数型言語とで[unzip]と呼ばれているものです。次の段落のコメントをはずし、[split]関数の定義を完成させなさい。続くテストを通過することも確認しなさい。 *)
 
-(*
-Fixpoint split
-  (* FILL IN HERE *)
+
+Fixpoint split {X Y : Type} (ps : list (X*Y)) : list X * list Y :=
+  match ps with
+    | [] => ([], [])
+    | (x,y) :: ps' =>
+        match split ps' with
+          | (xs, ys) => (x :: xs, y :: ys)
+        end
+  end.
 
 Example test_split:
   split [(1,false),(2,false)] = ([1,2],[false,false]).
 Proof. reflexivity.  Qed.
-*)
+
 (** [] *)
 
 
@@ -342,16 +357,16 @@ Proof. reflexivity.  Qed.
 (** 前の章に出てきた[hd_opt]関数の多相版を定義しなさい。。次の単体テストでの確認も忘れずに。 *)
 
 Definition hd_opt {X : Type} (l : list X)  : option X :=
-  (* FILL IN HERE *) admit.
+  index 0 l.
 
 (** 再び、暗黙的に定義された引数を明示的に指定してみましょう。関数名の前に[@]をつければいいのでしたね。 *)
 
 Check @hd_opt.
 
 Example test_hd_opt1 :  hd_opt [1,2] = Some 1.
- (* FILL IN HERE *) Admitted.
+Proof. reflexivity. Qed.
 Example test_hd_opt2 :   hd_opt  [[1],[2]]  = Some [1].
- (* FILL IN HERE *) Admitted.
+Proof. reflexivity. Qed.
 (** [] *)
 
 
@@ -414,7 +429,7 @@ Definition prod_curry {X Y Z : Type}
 
 Definition prod_uncurry {X Y Z : Type}
   (f : X -> Y -> Z) (p : X * Y) : Z :=
-  (* FILL IN HERE *) admit.
+  f (fst p) (snd p).
 
 (** (考える練習: 次のコマンドを実行する前に、[prod_curry]と[prod_uncurry]の型を考えなさい。) *)
 
@@ -424,13 +439,13 @@ Check @prod_uncurry.
 Theorem uncurry_curry : forall (X Y Z : Type) (f : X -> Y -> Z) x y,
   prod_curry (prod_uncurry f) x y = f x y.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  reflexivity. Qed.
 
 Theorem curry_uncurry : forall (X Y Z : Type)
                                (f : (X * Y) -> Z) (p : X * Y),
   prod_uncurry (prod_curry f) p = f p.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  destruct p as [x y]. reflexivity. Qed.
 (** [] *)
 
 
@@ -496,15 +511,15 @@ Proof. reflexivity.  Qed.
 (** [filter]関数を使い、数値のリストを入力すると、そのうち偶数でなおかつ7より大きい要素だけを取り出す[filter_even_gt7]関数を書きなさい。 *)
 
 Definition filter_even_gt7 (l : list nat) : list nat :=
-  (* FILL IN HERE *) admit.
+  filter (fun n => andb (evenb n) (ble_nat 8 n)) l.
 
 Example test_filter_even_gt7_1 :
   filter_even_gt7 [1,2,6,9,10,3,12,8] = [10,12,8].
- (* FILL IN HERE *) Admitted.
+Proof. reflexivity. Qed.
 
 Example test_filter_even_gt7_2 :
   filter_even_gt7 [5,2,6,19,129] = [].
- (* FILL IN HERE *) Admitted.
+Proof. reflexivity. Qed.
 
 (** [] *)
 
@@ -518,12 +533,12 @@ Example test_filter_even_gt7_2 :
 
 Definition partition {X : Type} (test : X -> bool) (l : list X)
                      : list X * list X :=
-(* FILL IN HERE *) admit.
+  (filter test l, filter (fun x => negb (test x)) l).
 
 Example test_partition1: partition oddb [1,2,3,4,5] = ([1,3,5], [2,4]).
-(* FILL IN HERE *) Admitted.
+Proof. reflexivity. Qed.
 Example test_partition2: partition (fun x => false) [5,9,0] = ([], [5,9,0]).
-(* FILL IN HERE *) Admitted.
+Proof. reflexivity. Qed.
 (** [] *)
 
 
@@ -559,10 +574,24 @@ Proof. reflexivity.  Qed.
 (** **** 練習問題: ★★★, optional (map_rev) *)
 (** [map]と[rev]が可換であることを示しなさい。証明には補題をたてて証明する必要があるでしょう。 *)
 
+Lemma snoc_map:
+  forall (X Y : Type) (f:X -> Y) (l:list X) (x:X),
+    map f (snoc l x) = snoc (map f l) (f x).
+Proof.
+  induction l as [|x' l'].
+  Case "l = []". reflexivity.
+  Case "l = x' :: l'".
+    simpl. intros x. rewrite <- IHl'.
+    reflexivity. Qed.
+
 Theorem map_rev : forall (X Y : Type) (f : X -> Y) (l : list X),
   map f (rev l) = rev (map f l).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  induction l as [|x l'].
+  Case "l = []". reflexivity.
+  Case "l = x :: l'".
+    simpl. rewrite -> snoc_map. rewrite -> IHl'.
+    reflexivity. Qed.
 (** [] *)
 
 (** **** 練習問題: ★★, recommended (flat_map) *)
@@ -575,12 +604,15 @@ Proof.
 
 Fixpoint flat_map {X Y:Type} (f:X -> list Y) (l:list X)
                    : (list Y) :=
-  (* FILL IN HERE *) admit.
+  match l with
+    | [] => []
+    | x :: l' => f x ++ flat_map f l'
+  end.
 
 Example test_flat_map1:
   flat_map (fun n => [n,n,n]) [1,5,4]
   = [1, 1, 1, 5, 5, 5, 4, 4, 4].
- (* FILL IN HERE *) Admitted.
+Proof. reflexivity. Qed.
 (** [] *)
 
 (** リストは、[map]関数のような関数に渡すことができる、帰納的に定義された唯一の型、というわけではありません。次の定義は、[option]型のために[map]関数を定義したものです。 *)
@@ -677,7 +709,7 @@ Proof. reflexivity. Qed.
 Theorem override_example : forall (b:bool),
   (override (constfun b) 3 true) 2 = b.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  reflexivity. Qed.
 (** [] *)
 
 (** このコースでこれ以降、関数のオーバーライド（上書き）がよく登場しますが、この性質について多くを知る必要はありません。しかし、これらの性質を証明するには、さらにいくつかのCoqのタクティックを知らなければなりません。それが、この章の残りの部分の主なトピックになります。 *)
@@ -728,7 +760,10 @@ Theorem override_neq : forall {X:Type} x1 x2 k1 k2 (f : nat->X),
   beq_nat k2 k1 = false ->
   (override f k2 x2) k1 = x1.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros X x1 x2 k1 k2 f H0 H1.
+  unfold override. rewrite -> H1.
+  apply H0.
+Qed.
 (** [] *)
 
 (** [unfold]の逆の機能として、Coqには[fold]というタクティックも用意されています。これは、展開された定義を元に戻してくれますが、あまり使われることはありません。 *)
@@ -791,7 +826,12 @@ Example sillyex1 : forall (X : Type) (x y z : X) (l j : list X),
      y :: l = x :: j ->
      x = y.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros X x y z l j eq0 eq1.
+  inversion eq0.
+  inversion eq1.
+  rewrite <- H0.
+  reflexivity.
+Qed.
 (** [] *)
 
 Theorem silly6 : forall (n : nat),
@@ -812,7 +852,9 @@ Example sillyex2 : forall (X : Type) (x y z : X) (l j : list X),
      y :: l = z :: j ->
      x = z.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros X x y z l j contra eq.
+  inversion contra.
+Qed.
 (** [] *)
 
 (** コンストラクタの単射性が、[forall (n m : nat), S n = S m -> n = m]を示している一方で、これを逆に適用することで、普通の等式の証明をすることができれば、これまで出てきたいくつかのケースにも使えるでしょう。 *)
@@ -840,7 +882,27 @@ Proof.
 (** **** 練習問題: ★★ (beq_nat_eq_informal) *)
 (** [beq_nat_eq]の、非形式的な証明を示しなさい。 *)
 
-(* FILL IN HERE *)
+(*
+forall n m, true = beq_nat n m -> n = m.
+任意の自然数 n m について、
+beq_nat n m = true ならば n = m であることを示す
+
+自然数 n についての帰納法を適用する
+- n = 0 のとき
+  m = 0 ならば beq_nat 0 0 は true で 0 = 0 なので成立
+  m = S m' ならば beq_nat 0 m は false で前提が成立しないので成立
+- n = S n' のとき
+  m = 0 ならば beq_nat (S n') 0 は false で前提が成立しないので成立
+  m = S m' ならば
+     beq_nat (S n') (S m') = beq_nat n' m'
+     また、帰納法の仮定から、
+     全ての m について beq_nat n' m ならば n' = m
+     つまり m' についても beq_nat n' m' ならば n' = m'
+     n' = m' のときには S n' = S m'
+     つまり
+     beq_nat (S n') (S m') ならば S n' = S m' が成立。
+     これは n = S n' のときにも帰納法の仮定が成立することを示している。
+ *)
 (** [] *)
 
 (** **** 練習問題: ★★★ (beq_nat_eq') *)
@@ -850,7 +912,18 @@ Theorem beq_nat_eq' : forall m n,
   beq_nat n m = true -> n = m.
 Proof.
   intros m. induction m as [| m'].
-  (* FILL IN HERE *) Admitted.
+  (* m = 0 *)
+    destruct n as [| n'].
+    (* n = 0 *) intros H0. reflexivity.
+    (* n = S n' *) simpl. intros contra. inversion contra.
+  (* m = S m' *)
+    destruct n as [| n'].
+    (* n = 0 *) simpl. intros contra. inversion contra.
+    (* n = S n' *)
+      simpl. intro H0.
+      apply eq_remove_S.
+      apply (IHm' n' H0).
+Qed.
 (** [] *)
 
 (** [inversion]のもう一つの側面を見てみましょう。以前にすでに証明済みのものですが、少し遠回りな書き方になっています。新しく追加された等号のせいで、少し等式に関する証明を追加する必要がありますし、これまでに出てきたタクティックを使う練習にもなります。 *)
@@ -878,12 +951,27 @@ Proof.
 Theorem beq_nat_0_l : forall n,
   true = beq_nat 0 n -> 0 = n.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n H.
+  destruct n as [| n'].
+    reflexivity.
+    inversion H.
+Qed.
+
+
+Theorem beq_nat_0_l' : forall n,
+  true = beq_nat 0 n -> 0 = n.
+Proof.
+  apply beq_nat_eq.
+Qed.
 
 Theorem beq_nat_0_r : forall n,
   true = beq_nat n 0 -> 0 = n.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n H.
+  destruct n as [| n'].
+    reflexivity.
+    inversion H.
+Qed.
 (** [] *)
 
 
@@ -940,7 +1028,22 @@ Theorem plus_n_n_injective : forall n m,
 Proof.
   intros n. induction n as [| n'].
     (* ヒント: 補題plus_n_Smを使用します *)
-    (* FILL IN HERE *) Admitted.
+  Case "n = 0".
+    destruct m as [| m'].
+      reflexivity.
+
+      intros H. inversion H.
+  Case "n = S n'".
+    intros m H.
+    destruct m as [| m'].
+      inversion H.
+
+      rewrite <- plus_n_Sm in H. rewrite <- plus_n_Sm in H.
+      simpl in H. inversion H.
+
+      apply eq_remove_S. apply IHn'.
+      apply H1.
+Qed.
 (** [] *)
 
 
@@ -972,18 +1075,33 @@ Proof.
 Theorem override_shadow : forall {X:Type} x1 x2 k1 k2 (f : nat->X),
   (override (override f k1 x2) k1 x1) k2 = (override f k1 x1) k2.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  unfold override.
+  intros X x1 x2 k1 k2.
+  destruct (beq_nat k1 k2).
+  reflexivity. reflexivity.
+Qed.
 (** [] *)
 
 (** **** 練習問題: ★★★, recommended (combine_split) *)
-(*
+
 Theorem combine_split : forall X Y (l : list (X * Y)) l1 l2,
   split l = (l1, l2) ->
   combine l1 l2 = l.
 Proof.
   intros X Y l. induction l as [| [x y] l'].
-  (* FILL IN HERE *) Admitted.
-*)
+  Case "l = []".
+    intros l1 l2 H.
+    inversion H.
+    reflexivity.
+  Case "l = [x y] :: l'".
+    intros l1 l2 H.
+    simpl in H.
+    destruct (split l') as [ xs ys ].
+    inversion H.
+    simpl.
+    rewrite -> (IHl' xs ys (eq_refl (xs, ys))).
+    reflexivity.
+Qed.
 (** [] *)
 
 (** **** 練習問題: ★★★, optional (split_combine) *)
@@ -993,7 +1111,27 @@ Proof.
 
     この定理をCoqで証明しなさい（なるべく[intros]を使うタイミングを遅らせ、帰納法の仮定を一般化させておくといいでしょう。 *)
 
-(* FILL IN HERE *)
+Theorem split_combine :
+  forall X Y (l1 : list X) (l2 : list Y),
+    length l1 = length l2 -> split (combine l1 l2) = (l1, l2).
+Proof.
+  induction l1 as [| x l1'].
+  (* l1 = [] *)
+    destruct l2 as [| y l2'].
+    (* l2 = [] *) reflexivity.
+    (* l2 = y :: l2' *)
+      simpl. intro H. inversion H.
+  (* l1 = x :: l1' *)
+    intros l2 H.
+    destruct l2 as [| y l2'].
+      (* l2 = [] *) inversion H.
+      (* l2 = y :: l2' *)
+         simpl.
+         rewrite -> (IHl1' l2').
+         reflexivity.
+         simpl in H. inversion H.
+         reflexivity.
+Qed.
 (** [] *)
 
 
@@ -1052,7 +1190,16 @@ Theorem override_same : forall {X:Type} x1 k1 k2 (f : nat->X),
   f k1 = x1 ->
   (override f k1 x1) k2 = f k2.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros X x1 k1 k2 f eq.
+  unfold override.
+  remember (beq_nat k1 k2) as d12.
+  destruct d12.
+  (* d12 = true *)
+    apply beq_nat_eq in Heqd12.
+    rewrite <- Heqd12. rewrite -> eq.
+    reflexivity.
+  (* d12 = false *) reflexivity.
+Qed.
 (** [] *)
 
 (** **** 練習問題: ★★★, optional (filter_exercise) *)
@@ -1063,7 +1210,17 @@ Theorem filter_exercise : forall (X : Type) (test : X -> bool)
      filter test l = x :: lf ->
      test x = true.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  induction l as [| x' l'].
+  (* l = [] *) simpl. intros lf eq. inversion eq.
+  (* l = x' :: l' *)
+    simpl. remember (test x') as tx'.
+    destruct tx'.
+    (* tx' = true *)
+      intros lf eq. inversion eq.
+      rewrite <- H0. rewrite <- Heqtx'.
+      reflexivity.
+    (* tx' = false *) apply IHl'.
+Qed.
 (** [] *)
 
 
@@ -1106,20 +1263,38 @@ Example trans_eq_exercise : forall (n m o p : nat),
      (n + p) = m ->
      (n + p) = (minustwo o).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n m o p eq1 eq2.
+  apply (trans_eq (n + p) m). apply eq2. apply eq1. Qed.
 
 Theorem beq_nat_trans : forall n m p,
   true = beq_nat n m ->
   true = beq_nat m p ->
   true = beq_nat n p.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n m p eq1 eq2.
+  apply beq_nat_eq in eq1. apply beq_nat_eq in eq2.
+  rewrite -> (trans_eq n m p eq1 eq2).
+  apply beq_nat_refl.
+Qed.
 
 Theorem override_permute : forall {X:Type} x1 x2 k1 k2 k3 (f : nat->X),
   false = beq_nat k2 k1 ->
   (override (override f k2 x2) k1 x1) k3 = (override (override f k1 x1) k2 x2) k3.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros.
+  unfold override.
+  destruct (beq_nat k1 k3) as [|] eqn: Hd13.
+  (* Hd13 = true *)
+    symmetry in Hd13. apply beq_nat_eq in Hd13.
+    destruct (beq_nat k2 k3) as [|] eqn: Hd23.
+    (* Hd23 = true *)
+      symmetry in Hd23. apply beq_nat_eq in Hd23.
+      rewrite -> Hd13 in H. rewrite -> Hd23 in H.
+      rewrite <- beq_nat_refl in H.
+      inversion H.
+    (* Hd23 = false *) reflexivity.
+  (* Hd13 = false *) reflexivity.
+Qed.
 (** [] *)
 
 (* ################################################################## *)
@@ -1195,18 +1370,62 @@ Proof. reflexivity. Qed.
 
 Theorem fold_length_correct : forall X (l : list X),
   fold_length l = length l.
-(* FILL IN HERE *) Admitted.
+Proof.
+  induction l as [| x l'].
+  simpl.
+  reflexivity.
+
+  simpl.
+  rewrite <- IHl'.
+  unfold fold_length.
+  simpl.
+  reflexivity.
+Qed.
 (** [] *)
 
 (** **** 練習問題: ★★★, recommended (fold_map) *)
 (** [map]関数も[fold]を使って書くことができます。以下の[fold_map]を完成させなさい。 *)
 
 Definition fold_map {X Y:Type} (f : X -> Y) (l : list X) : list Y :=
-(* FILL IN HERE *) admit.
+  fold (fun x ys => cons (f x) ys) l [].
 
 (** [fold_map]の正しさを示す定理をCoqで書き、証明しなさい *)
 
-(* FILL IN HERE *)
+Theorem map_fold_map_eq :
+  forall {X Y:Type} (f : X -> Y) (l : list X),
+    map f l = fold_map f l.
+Proof.
+  intros.
+
+  (*
+  unfold fold_map.
+  induction l as [| x l'].
+  reflexivity.
+
+  simpl.
+  rewrite <- IHl'.
+  reflexivity.
+  *)
+
+  induction l as [| x l'].
+  (* l = [] *) reflexivity.
+  (* l = x :: l' *)
+    unfold fold_map.
+
+    (*
+    simpl.
+    rewrite -> IHl'.
+    unfold fold_map.
+    reflexivity.
+     *)
+
+    unfold fold.
+    fold (fold (fun x ys => cons (f x) ys) l').
+    fold (fold_map f l').
+    simpl.
+    rewrite <- IHl'.
+    reflexivity.
+Qed.
 (** [] *)
 
 Module MumbleBaz.
@@ -1230,7 +1449,22 @@ Inductive grumble (X:Type) : Type :=
       - [e bool (b c 0)]
       - [c]
  *)
-(* FILL IN HERE *)
+(**
+ - d (b a 5)
+      正しくない -- (b a 5) は Type 型ではない
+ - d mumble (b a 5)
+      正しい
+ - d bool (b a 5)
+      正しい
+ - e bool true
+      正しい
+ - e mumble (b c 0)
+      正しい
+ - e bool (b c 0)
+      正しくない -- (b c 0) は bool ではない
+ - c
+      正しい
+ *)
 (** [] *)
 
 (** **** 練習問題: ★★, optional (baz_num_elts) *)
@@ -1241,7 +1475,11 @@ Inductive baz : Type :=
    | y : baz -> bool -> baz.
 
 (** 型[baz]はいくつの要素を持つことができるでしょうか？ *)
-(* FILL IN HERE *)
+(*
+要素数は0。
+baz から baz を作ることはできるが、
+単位元となる baz を作る方法が無い。
+ *)
 (** [] *)
 
 End MumbleBaz.
@@ -1272,7 +1510,81 @@ End MumbleBaz.
     そして、[existsb']と[existsb]が同じ振る舞いをすることを証明しなさい。
 *)
 
-(* FILL IN HERE *)
+Fixpoint forallb {X:Type} (f:X -> bool) (l:list X) :=
+  match l with
+    | [] => true
+    | x :: l' => match f x with
+                   | false => false
+                   | true => forallb f l'
+                 end
+  end.
+
+Goal forallb oddb [1,3,5,7,9] = true.
+Proof. reflexivity. Qed.
+
+Goal forallb negb [false,false] = true.
+Proof. reflexivity. Qed.
+
+Goal forallb evenb [0,2,4,5] = false.
+Proof. reflexivity. Qed.
+
+Goal forallb (beq_nat 5) [] = true.
+Proof. reflexivity. Qed.
+
+Fixpoint existsb {X:Type} (f:X -> bool) (l:list X) :=
+  match l with
+    | [] => false
+    | x :: l' => match f x with
+                   | true => true
+                   | false => existsb f l'
+                 end
+  end.
+
+
+Goal existsb (beq_nat 5) [0,2,3,6] = false.
+Proof. reflexivity. Qed.
+
+Goal existsb (andb true) [true,true,false] = true.
+Proof. reflexivity. Qed.
+
+Goal existsb oddb [1,0,0,0,0,3] = true.
+Proof. reflexivity. Qed.
+
+Goal existsb evenb [] = false.
+Proof. reflexivity. Qed.
+
+Definition existsb' {X:Type} (f:X -> bool) l :=
+  negb (forallb (fun x => negb (f x)) l).
+
+Goal existsb' (beq_nat 5) [0,2,3,6] = false.
+Proof. reflexivity. Qed.
+
+Goal existsb' (andb true) [true,true,false] = true.
+Proof. reflexivity. Qed.
+
+Goal existsb' oddb [1,0,0,0,0,3] = true.
+Proof. reflexivity. Qed.
+
+Goal existsb' evenb [] = false.
+Proof. reflexivity. Qed.
+
+
+Theorem existb_existb'_eq :
+  forall {X:Type} (f:X -> bool) (l:list X),
+    existsb f l = existsb' f l.
+Proof.
+  induction l as [| x l'].
+  (* l = [] *) reflexivity.
+  (* l = x :: l' *)
+    unfold existsb'.
+    simpl.
+    destruct (f x).
+    (* f x = true *)
+      simpl. reflexivity.
+    (* f x = false *)
+      simpl. rewrite -> IHl'. reflexivity.
+      (* fold (existsb' f l'). apply IHl'. *)
+Qed.
 (** [] *)
 
 (** **** 練習問題: ★★, optional (index_informal) *)
@@ -1289,5 +1601,67 @@ End MumbleBaz.
    forall X n l, length l = n -> @index X (S n) l = None.
 ]]
  *)
-(* FILL IN HERE *)
+(*
+証明:
+  任意のリスト l について、帰納法を適用する
+    l が [] のとき、
+      さらに n が O のときは
+        length [] = O -> @index X (S O) [] = None
+          となり成立する。
+
+      さらに n が S n' のときは
+        length [] = S n' -> @index X (S n') [] = None
+          これは前提が成立しないので成立する。
+    l が x :: l' であり、
+      forall n, length l' = n -> @index X (S n) l' = None
+      が帰納法の仮定で成立しているとする
+
+      さらに n が O のときは
+        length (x :: l') = O -> @index X (S O) (x :: l') = None
+          これは前提が成立しないので成立する。
+      さらに n が S n' のときは
+        length (x :: l') = S n' -> @index X (S (S n')) (x :: l') = None
+          前提を length の定義で置き換え、
+          結果を index  の定義で置き換えると、
+        length l' = n' -> @index X (S n') l' = None
+          これは帰納法の仮定から成立する。
+ *)
 (** [] *)
+
+(* Goal forall X n l, length l = n -> @index X (S n) l = None. *)
+Goal forall X l n, length l = n -> @index X (S n) l = None.
+Proof.
+  induction l as [| x l'].
+  (* l = [] *)
+    destruct n as [| n'].
+    (* n = O *) reflexivity.
+    (* n = S n' *)
+      intros eq. inversion eq.
+  (* l = x :: l' *)
+    destruct n as [| n'].
+    (* n = O *)
+      intros eq. inversion eq.
+    (* n = S n' *)
+      intro eq. inversion eq.
+      rewrite -> H0.
+      apply (IHl' n' H0).
+Qed.
+
+
+Lemma app_nilL :
+  forall {X:Type} (l1 l2:list X), l1 ++ l2 = [] -> l1 = [].
+Proof.
+  intros X l1 l2 eq.
+  induction l1 as [| x xs].
+  (* l1 = [] *) reflexivity.
+  (* l1 = x :: xs *) inversion eq.
+Qed.
+
+Lemma app_nilR :
+  forall {X:Type} (l1 l2:list nat), l1 ++ l2 = [] -> l2 = [].
+Proof.
+  intros X l1 l2 eq.
+  rewrite -> (app_nilL l1 l2 eq) in eq.
+  simpl in eq.
+  apply eq.
+Qed.

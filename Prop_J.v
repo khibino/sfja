@@ -1277,8 +1277,6 @@ Proof.
            ...
 ]]
    Briefly explain why.
-
-(* FILL IN HERE *)
 *)
 
 (** 次の証明はうまくいきません。 [[
@@ -1292,9 +1290,9 @@ Proof.
            ...
 ]]
   理由を簡潔に説明しない。
+*)
 
 (* FILL IN HERE *)
-*)
 
 (** [] *)
 (* [] *)
@@ -1616,14 +1614,15 @@ Proof.
     Theorem: For any nat [n], if [MyProp n] then [ev n].
 
     Proof:
-    (* FILL IN HERE *)
-[] *)
+ *)
 (** [ev_MyProp] の 形式的な証明に対応する非形式的な証明を書きなさい。
 
     定理: すべての自然数 [n] に対して、 [MyProp n] ならば [ev n]。
 
-    証明: (ここを埋める)
-[] *)
+    証明:
+ *)
+(* FILL IN HERE *)
+(** [] *)
 
 
 (* ##################################################### *)
@@ -2549,14 +2548,12 @@ Inductive p : (tree nat) -> nat -> Prop :=
 
 (*  Describe, in English, the conditions under which the
    proposition [p t n] is provable.
-
-   (* FILL IN HERE *)
 *)
 (**  これについて、どのような時に [p t n] が証明可能であるか、その
     条件をを自然言語で説明しなさい。
-
-   (* FILL IN HERE *)
 *)
+
+(* FILL IN HERE *)
 (** [] *)
 
 End P.

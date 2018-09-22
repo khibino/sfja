@@ -557,7 +557,14 @@ Definition okd_before2 := forall d1 d2 d3,
 (** **** 練習問題: ★, optional (okd_before2_valid) *)
 Theorem okd_before2_valid : okd_before2.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  unfold okd_before2.
+  intros d1 d2 d3 ok b0 b1.
+  apply okd_before with (d2 := d2).
+    apply okd_before with (d2 := d3).
+      apply ok.
+    apply b1.
+  apply b0.
+Qed.
 (** [] *)
 
 (* But what should the corresponding proof object look like?
@@ -591,6 +598,15 @@ Definition okd_before2_valid' : okd_before2 :=
 (** 下記の結果としてCoqが出力するものを予測しなさい。 *)
 
 Print okd_before2_valid.
+
+(*
+okd_before2_valid =
+  fun (d1 d2 d3 : day) =>
+    fun (ok : ok_day d3) =>
+      fun (b0 : day_before d2 d1) =>
+        fun (b1 : day_before d3 d2) =>
+          okd_before d1 d2 (okd_before d2 d3 ok b1) b0 : okd_before2
+ *)
 
 (* ##################################################### *)
 (* ** Induction Principles for Inductively Defined Types *)
@@ -684,7 +700,12 @@ Proof.
 Theorem plus_one_r' : forall n:nat,
   n + 1 = S n.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  apply nat_ind.
+  (* O *) reflexivity.
+  (* S n *)
+    intros n IHn.
+    simpl. rewrite -> IHn. reflexivity.
+Qed.
 (** [] *)
 
 (* The induction principles that Coq generates for other
@@ -743,6 +764,8 @@ Inductive rgb : Type :=
   | green : rgb
   | blue : rgb.
 Check rgb_ind.
+
+(* forall P : rgb -> Prop, P red -> P green -> P blue -> forall r : rgb, P r *)
 (** [] *)
 
 (* Here's another example, this time with one of the constructors
@@ -773,6 +796,14 @@ Inductive natlist1 : Type :=
 
 (* Now what will the induction principle look like? *)
 (** このとき、帰納法の原理はどのようになるでしょうか？ *)
+
+(*
+natlist1_ind :
+forall P : natlist1 -> Prop,
+P nnil1 ->
+(forall n : natlsit1, P n -> forall n0 : nat, P (nsnoc1 n n0)) ->
+forall n : natlist, P n
+ *)
 (** [] *)
 
 (* From these examples, we can extract this general rule:
@@ -820,7 +851,8 @@ Inductive natlist1 : Type :=
     [ExSet] の帰納的な定義を示しなさい。 *)
 
 Inductive ExSet : Type :=
-  (* FILL IN HERE *)
+| con1 : bool -> ExSet
+| con2 : nat -> ExSet -> ExSet
 .
 
 (** [] *)
@@ -889,6 +921,14 @@ Inductive tree (X:Type) : Type :=
   | leaf : X -> tree X
   | node : tree X -> tree X -> tree X.
 Check tree_ind.
+
+(*
+tree_ind :
+ forall (X : Type) (P : tree X -> Prop),
+   (forall x : X, P (leaf X x)) ->
+   (forall t : tree X, P t -> t0 : tree X, P t0 -> P (node X e e0)) ->
+   forall t : tree X, P t
+ *)
 (** [] *)
 
 (* **** Exercise: 1 star (mytype) *)
@@ -916,6 +956,13 @@ Check tree_ind.
             forall m : mytype X, P m
 ]]
 *)
+
+Inductive mytype (X:Type) : Type :=
+| constr : X -> mytype X
+| constr2 : nat -> mytype X
+| constr3 : mytype X -> nat -> mytype X.
+
+Check mytype_ind.
 (** [] *)
 
 (* **** Exercise: 1 star, optional (foo) *)
@@ -943,6 +990,13 @@ Check tree_ind.
              forall f2 : foo X Y, P f2
 ]]
 *)
+
+Inductive foo (X Y:Type) :=
+| bar : X -> foo X Y
+| baz : Y -> foo X Y
+| quux : (nat -> foo X Y) -> foo X Y.
+
+Check foo_ind.
 (** [] *)
 
 (* **** Exercise: 1 star, optional (foo') *)
@@ -980,6 +1034,15 @@ Inductive foo' (X:Type) : Type :=
 ]]
 *)
 
+(*
+foo'_ind :
+  forall (X : Type) (P : foo' X -> Prop),
+    (forall (l : list X) (f : foo' X),
+      P f ->
+      P (C1 l f)) ->
+    P C2 ->
+    forall f : foo' X, P f
+ *)
 (** [] *)
 
 (* ##################################################### *)
@@ -1116,9 +1179,11 @@ Inductive ev : nat -> Prop :=
 Theorem four_ev' :
   ev 4.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  apply ev_SS. apply ev_SS. apply ev_0.
+Qed.
+
 Definition four_ev : ev 4 :=
-  (* FILL IN HERE *) admit.
+  ev_SS _ (ev_SS _ ev_0).
 (** [] *)
 
 (* **** Exercise: 2 stars (ev_plus4) *)
@@ -1127,11 +1192,15 @@ Definition four_ev : ev 4 :=
     even, then so is [4+n]. *)
 (** [n] が偶数ならば [4+n] も偶数であることをタクティックによる証明と証明オブジェクトによる証明で示しなさい。 *)
 Definition ev_plus4 : forall n, ev n -> ev (4 + n) :=
-  (* FILL IN HERE *) admit.
+  fun n ev => ev_SS _ (ev_SS n ev).
+
 Theorem ev_plus4' : forall n,
   ev n -> ev (4 + n).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  simpl.
+  intros n Hev.
+  apply ev_SS. apply ev_SS. apply Hev.
+Qed.
 (** [] *)
 
 (* **** Exercise: 2 stars (double_even) *)
@@ -1142,7 +1211,10 @@ Proof.
 Theorem double_even : forall n,
   ev (double n).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  induction n as [|n'].
+  (* n = O *) apply ev_0.
+  (* n = S n' *)
+    simpl. apply ev_SS. apply IHn'. Qed.
 (** [] *)
 
 (* **** Exercise: 4 stars, optional (double_even_pfobj) *)
@@ -1154,6 +1226,16 @@ Proof.
 (** 上記のタクティックによる証明でどのような証明オブジェクトが構築されるかを予想しなさい。
     (答を確かめる前に、[Case] を除去しましょう。 これがあると証明オブジェクトが少し見づらくなります。)
 *)
+
+(* Check nat_ind. *)
+(* nat_ind
+      : forall P : nat -> Prop,
+        P 0 -> (forall n : nat, P n -> P (S n)) -> forall n : nat, P n *)
+
+Definition double_even_pfobj : forall n, ev (double n) :=
+  nat_ind (fun n => ev (double n))
+          ev_0
+          (fun (n' : nat) (IHn' : ev (double n')) => ev_SS (double n') IHn').
 (** [] *)
 
 (* ####################################################### *)
@@ -1219,6 +1301,18 @@ Proof.
 (* What happens if we try to [destruct] on [n] instead of [E]? *)
 (** [E] の代わりに [n] に対して [destruct] するとどうなるでしょうか? *)
 
+Theorem ev_minus2_n :
+  forall n, ev n -> ev (pred (pred n)).
+Proof.
+  intros n E.
+  destruct n as [| n'].
+  (* n = O *) apply ev_0.
+  (* n = S n' *) destruct n' as [| n''].
+    (* n = S n' = S O *) apply ev_0.
+    (* n = S n' = S (S n'') *)
+      simpl.
+Admitted.
+(* n に対する destruct だけでは示せない *)
 (** [] *)
 (* [] *)
 
@@ -1250,6 +1344,18 @@ Proof.
 (** この証明を [E] でなく [n] に対する帰納法として実施できますか? *)
 (* Could this proof be carried out by induction on [n] instead
     of [E]? *)
+
+Theorem ev_even_n :
+  forall n, ev n -> even n.
+Proof.
+  intros n E. induction n as [| n'].
+  (* n = 0 *) reflexivity.
+  (* n = S n' *) destruct n' as [| n''].
+    (* n' = 0 *) inversion E.
+    (* n' = S n'' n = S (S n'') *)
+       inversion E. unfold even.
+Admitted.
+(* 一つ前の n の帰納法の仮定のみでは証明がうまくいかない *)
 (** [] *)
 (* [] *)
 
@@ -1277,6 +1383,7 @@ Proof.
            ...
 ]]
    Briefly explain why.
+
 *)
 
 (** 次の証明はうまくいきません。 [[
@@ -1292,7 +1399,7 @@ Proof.
   理由を簡潔に説明しない。
 *)
 
-(* FILL IN HERE *)
+(* ev n の根拠を作る方法は n が偶数のときしか存在しないので。 *)
 
 (** [] *)
 (* [] *)
@@ -1306,7 +1413,11 @@ Proof.
 Theorem ev_sum : forall n m,
    ev n -> ev m -> ev (n+m).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n m evN evM.
+  induction evN as [| n' evN'].
+  (* evN = ev_0 *) apply evM.
+  (* evN = ev_SS n' evN' *)
+    simpl. apply ev_SS. apply IHevN'. Qed.
 (** [] *)
 
 
@@ -1382,7 +1493,11 @@ Proof.
 Theorem SSSSev_even : forall n,
   ev (S (S (S (S n)))) -> ev n.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n evH.
+  inversion evH as [| n' evH'].
+  inversion evH' as [| n'' evH''].
+  apply evH''.
+Qed.
 
 (* The [inversion] tactic can also be used to derive goals by showing
     the absurdity of a hypothesis. *)
@@ -1392,7 +1507,11 @@ Proof.
 Theorem even5_nonsense :
   ev 5 -> 2 + 2 = 9.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros evH.
+  inversion evH as [| n evH'].
+  inversion evH' as [| n' evH''].
+  inversion evH''.
+Qed.
 (** [] *)
 
 (* We can generally use [inversion] instead of [destruct] on
@@ -1422,7 +1541,14 @@ Proof.
 Theorem ev_ev_even : forall n m,
   ev (n+m) -> ev n -> ev m.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n m Enm E.
+  generalize dependent Enm.
+  generalize dependent m.
+  induction E as [| n' E'].
+  (* ev n = ev_0 *)  simpl. intros m Em. apply Em.
+  (* ev n = ev_SS n' E' *)
+    simpl. intros m Em. inversion Em as [| n'' Em'].
+    apply (IHE' m Em'). Qed.
 (** [] *)
 
 (* **** Exercise: 3 stars, optional (ev_plus_plus) *)
@@ -1438,7 +1564,18 @@ Proof.
 Theorem ev_plus_plus : forall n m p,
   ev (n+m) -> ev (n+p) -> ev (m+p).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n m p E0 E1.
+  apply (ev_ev_even (n + n) (m + p)).
+  rewrite <- (plus_assoc n n (m + p)).
+  rewrite -> (plus_assoc n m p).
+  rewrite -> (plus_comm n m).
+  rewrite <- (plus_assoc m n p).
+  rewrite -> (plus_assoc n m (n + p)).
+  apply (ev_sum (n + m) (n + p)).
+  apply E0. apply E1.
+  rewrite <- double_plus.
+  apply double_even.
+Qed.
 (** [] *)
 
 (* ##################################################### *)
@@ -1539,11 +1676,17 @@ Proof.
 
 Theorem MyProp_0 : MyProp 0.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  apply MyProp3. apply MyProp3. simpl.
+  apply MyProp1. Qed.
 
 Theorem MyProp_plustwo : forall n:nat, MyProp n -> MyProp (S (S n)).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n H.
+  apply MyProp3. simpl.
+  assert (S (S (S (S n))) = 4 + n) as HP4.
+  reflexivity.
+  rewrite -> HP4.
+  apply MyProp2. apply H. Qed.
 (** [] *)
 
 (*  With these, we can show that [MyProp] holds of all even numbers,
@@ -1602,7 +1745,13 @@ Proof.
 Theorem ev_MyProp : forall n:nat,
   MyProp n -> ev n.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n E.
+  induction E as [| n' E' | n' E'].
+  (* E = MyProp1 *) apply (ev_SS 2 (ev_SS 0 ev_0)).
+  (* E = MyProp2 *)
+    simpl. apply ev_SS. apply ev_SS. apply IHE'.
+  (* E = MyProp3 *)
+    apply (ev_minus2 (S (S n')) IHE'). Qed.
 (** [] *)
 
 (* **** Exercise: 3 stars, optional (ev_MyProp_informal) *)
@@ -1621,7 +1770,33 @@ Proof.
 
     証明:
  *)
-(* FILL IN HERE *)
+(*
+      n を nat とし MyProp n の導出を E とする。
+      E の帰納法について証明を行う。
+      以下の 3つの場合を考える。
+
+      - E の最後のステップが MyProp1 だった場合、n は 4 となる。
+        その場合、ev 4 が成り立つことを示す必要がある。
+        ev_SS 2 (ev_SS 0 ev_0) よりこれは真となる。
+
+      - E の最後のステップが MyProp2 だった場合、
+        n = 4 + n' となる n' が存在し、MyProp n' の導出が存在する。
+
+        このときに ev n を示す必要がある。
+
+        帰納法の仮定により ev n' の導出が存在するのでそれを
+        IHE' とすると、 ev_SS (2 + n') (ev_SS n' IHE') は ev (4 + n') の導出となり、
+        それは ev n の導出であるので示された。
+
+      - E の最後のステップが MyProp3 だった場合、
+        n = n' となる n' が存在し、 MyProp (2 + n') の導出が存在する。
+
+        このときに ev n を示す必要がある。
+
+        帰納法の仮定により ev (2 + n') の導出が存在するのでそれを
+        IHE' とすると、ev_minus2 (S (S n')) IHE' は ev n' の導出となり、
+        それは ev n の導出であるので示された。
+ *)
 (** [] *)
 
 
@@ -2288,7 +2463,33 @@ Proof.
     同じスタイルになるよう書き直しなさい。このことは、それぞれの定理が
     帰納法で証明された命題に明確な定義を与え、この定義された命題から定理と
     証明を示しています。  *)
-(* FILL IN HERE *)
+Definition P_plus_assoc' (n m p : nat) : Prop :=
+  n + (m + p) = (n + m) + p.
+
+Theorem plus_assoc'' :
+  forall n m p:nat, P_plus_assoc' n m p.
+Proof.
+  induction n as [| n'].
+  Case "n = O". reflexivity.
+  Case "n = S n'".
+    unfold P_plus_assoc'. simpl.
+    unfold P_plus_assoc' in IHn'.
+    intros m p. rewrite -> IHn'. reflexivity. Qed.
+
+Definition P_plus_comm' (n m : nat) : Prop :=
+  n + m = m + n.
+
+Theorem plus_comm''' :
+  forall n m : nat, P_plus_comm' n m.
+Proof.
+  induction n as [| n'].
+  Case "n = O".
+    intros m. unfold P_plus_comm'.
+    rewrite -> plus_0_r. reflexivity.
+  Case "n = S n'".
+    intros m.
+    unfold P_plus_comm'. unfold P_plus_comm' in IHn'.
+    simpl. rewrite -> IHn'. rewrite <- plus_n_Sm. reflexivity. Qed.
 (** [] *)
 
 (* ##################################################### *)
@@ -2314,15 +2515,17 @@ Proof.
     を定義しなさい。
  *)
 
-(*
-Fixpoint true_upto_n__true_everywhere
-(* FILL IN HERE *)
+
+Fixpoint true_upto_n__true_everywhere (n:nat) (f:nat -> Prop) :=
+  match n with
+    | O => forall m, f m
+    | S n' => f n -> true_upto_n__true_everywhere n' f
+  end.
 
 Example true_upto_n_example :
     (true_upto_n__true_everywhere 3 (fun n => even n))
   = (even 3 -> even 2 -> even 1 -> forall m : nat, even m).
 Proof. reflexivity.  Qed.
-*)
 (** [] *)
 
 (* ##################################################### *)
@@ -2503,6 +2706,22 @@ Proof.
 (** 帰納的に定義された [list] と [MyProp] に対し、Coq がどのような帰納法の原理を
     生成するか、予想して書き出し、次の行を実行した結果と比較しなさい。 *)
 
+(*
+list_ind
+     : forall (X : Type) (P : list X -> Prop),
+       P [] ->
+       (forall (x : X) (l : list X), P l -> P (x :: l)) ->
+       forall l : list X, P l
+ *)
+(*
+MyProp_ind
+     : forall P : nat -> Prop,
+       P 4 ->
+       (forall n : nat, MyProp n -> P n -> P (4 + n)) ->
+       (forall n : nat, MyProp (2 + n) -> P (2 + n) -> P n) ->
+       forall n : nat, MyProp n -> P n
+ *)
+
 Check list_ind.
 Check MyProp_ind.
 (** [] *)
@@ -2518,7 +2737,11 @@ Theorem ev_MyProp' : forall n:nat,
   MyProp n -> ev n.
 Proof.
   apply MyProp_ind.
-  (* FILL IN HERE *) Admitted.
+  (* MyProp1 *) apply (ev_SS 2 (ev_SS 0 ev_0)).
+  (* MyProp2 *)
+    intros n P evH. simpl. apply ev_SS. apply ev_SS. apply evH.
+  (* MyProp3 *)
+    intros n P evH. apply (ev_minus2 (S (S n)) evH). Qed.
 (** [] *)
 
 (*  **** Exercise: 4 stars, optional (MyProp_pfobj) *)
@@ -2530,7 +2753,59 @@ Proof.
     証明オブジェクトを手作業で構築（上の [ev_plus4] でやったように）することで
     証明しなさい。 *)
 
-(* FILL IN HERE *)
+(* Print MyProp_ev. *)
+(* Print ev_ind. *)
+
+(*
+ev_ind =
+fun (P : nat -> Prop) (f : P 0)
+  (f0 : forall n : nat, ev n -> P n -> P (S (S n))) =>
+fix F (n : nat) (e : ev n) {struct e} : P n :=
+  match e in (ev n0) return (P n0) with
+  | ev_0 => f
+  | ev_SS n0 e0 => f0 n0 e0 (F n0 e0)
+  end
+     : forall P : nat -> Prop,
+       P 0 ->
+       (forall n : nat, ev n -> P n -> P (S (S n))) ->
+       forall n : nat, ev n -> P n
+*)
+
+Definition MyProp_ev' (n:nat) (E:ev n) : MyProp n :=
+  ev_ind MyProp MyProp_0 (fun n' _ => MyProp_plustwo n') n E.
+
+Fixpoint MyProp_ev'' (n:nat) (E:ev n) : MyProp n :=
+  match E in (ev n) return (MyProp n) with
+    | ev_0 => MyProp_0
+    | ev_SS n' E' => MyProp_plustwo n' (MyProp_ev' n' E')
+  end.
+
+(* Print MyProp_ind. *)
+
+(*
+MyProp_ind =
+fun (P : nat -> Prop) (f : P 4)
+  (f0 : forall n : nat, MyProp n -> P n -> P (4 + n))
+  (f1 : forall n : nat, MyProp (2 + n) -> P (2 + n) -> P n) =>
+fix F (n : nat) (m : MyProp n) {struct m} : P n :=
+  match m in (MyProp n0) return (P n0) with
+  | MyProp1 => f
+  | MyProp2 n0 m0 => f0 n0 m0 (F n0 m0)
+  | MyProp3 n0 m0 => f1 n0 m0 (F (2 + n0) m0)
+  end
+     : forall P : nat -> Prop,
+       P 4 ->
+       (forall n : nat, MyProp n -> P n -> P (4 + n)) ->
+       (forall n : nat, MyProp (2 + n) -> P (2 + n) -> P n) ->
+       forall n : nat, MyProp n -> P n
+ *)
+
+Definition ev_MyProp'' (n:nat) (pn:MyProp n) : ev n :=
+  MyProp_ind ev
+             (ev_SS 2 (ev_SS 0 ev_0))
+             (fun n _ pn => ev_SS (S (S n)) (ev_SS n pn))
+             (fun n _ pn => ev_minus2 (S (S n)) pn)
+             n pn.
 (** [] *)
 
 Module P.
@@ -2552,8 +2827,12 @@ Inductive p : (tree nat) -> nat -> Prop :=
 (**  これについて、どのような時に [p t n] が証明可能であるか、その
     条件をを自然言語で説明しなさい。
 *)
-
-(* FILL IN HERE *)
+(*
+葉が c1 で二分岐が c2 一分岐が c3 であるような木を考える。
+葉のサイズは 1、 一分岐によるサイズの増分が 1、
+二分岐のサイズは部分木の合計であるとする。
+そのサイズを n としたとき、 t が同じ形の二分木のときには p t n が証明可能である。
+ *)
 (** [] *)
 
 End P.
@@ -2607,7 +2886,130 @@ End P.
 ]]
 *)
 
-(* FILL IN HERE *)
+Inductive pal'' {X:Type} : list X -> Prop :=
+| pal_rev (l:list X) : l = rev l -> pal'' l.
+
+Theorem id_plus_rev_pal'' :
+  forall X (l:list X), pal'' (l ++ rev l).
+Proof.
+  intros X l. apply pal_rev.
+  induction l as [| x xs ].
+  (* l = [] *) reflexivity.
+  (* l = x :: xs *)
+    simpl.
+    rewrite <- snoc_with_append. rewrite -> rev_snoc.
+    rewrite <- IHxs. simpl. reflexivity. Qed.
+
+Theorem pal''_id_rev_eq :
+  forall X (l:list X), pal'' l -> l = rev l.
+Proof.
+  intros X l H. inversion H as [l' req]. apply req. Qed.
+
+
+Inductive pal' {X:Type} : list X -> Prop :=
+| pal_even (xs:list X) : pal' (xs ++ rev xs)
+| pal_odd (x1:X) (xs:list X) : pal' (xs ++ x1 :: rev xs)
+.
+
+Theorem id_plus_rev_pal' :
+  forall X (l:list X), pal' (l ++ rev l).
+Proof. intros X. apply (@pal_even X). Qed.
+
+Lemma app_nil :
+  forall X (l:list X), l ++ [] = l.
+Proof.
+  intros X. induction l as [| x xs].
+  (* l = [] *) reflexivity.
+  (* l = x :: xs *) simpl. rewrite -> IHxs. reflexivity. Qed.
+
+Lemma rev_app :
+  forall X (l0:list X) (l1:list X), rev (l0 ++ l1) = rev l1 ++ rev l0.
+Proof.
+  intros X.
+  induction l0 as [| x xs].
+  (* l = [] *) simpl. intros l1. rewrite -> app_nil. reflexivity.
+  (* l = x :: xs *)
+    simpl. intros l1. rewrite <- snoc_with_append.
+    rewrite -> IHxs. reflexivity. Qed.
+
+Lemma rev_involutive :
+  forall X (l:list X), rev (rev l) = l.
+Proof.
+  intros X l. induction l as [| x xs].
+  Case "l = nil". reflexivity.
+  Case "l = cons".
+    simpl. rewrite -> rev_snoc. rewrite -> IHxs.
+    reflexivity. Qed.
+
+Lemma rev_injective :
+  forall X (l1 l2 : list X), rev l1 = rev l2 -> l1 = l2.
+Proof.
+  intros X l1 l2 H.
+  rewrite <- rev_involutive.
+  rewrite <- H.
+  rewrite -> rev_involutive.
+  reflexivity.
+Qed.
+
+Theorem app_ass :
+  forall X (l1 l2 l3 : list X),
+    (l1 ++ l2) ++ l3 = l1 ++ (l2 ++ l3).
+Proof.
+  intros X l1 l2 l3. induction l1 as [| n l1'].
+  Case "l1 = nil".
+    reflexivity.
+  Case "l1 = cons n l1'".
+    simpl. rewrite -> IHl1'. reflexivity. Qed.
+
+Lemma snoc_cons_app :
+  forall X (l1 l2 : list X) (x:X), (snoc l1 x) ++ l2 = l1 ++ x :: l2.
+Proof.
+  intros X l1 l2 x.
+  assert (snoc (l1 ++ []) x = l1 ++ snoc [] x) as saH by apply snoc_with_append.
+  simpl in saH. rewrite -> app_nil in saH.
+  rewrite -> saH. rewrite -> app_ass.
+  simpl. reflexivity. Qed.
+
+Theorem pal'_id_rev_eq :
+  forall X (l:list X), pal' l -> l = rev l.
+Proof.
+  intros X l palv.
+  destruct palv as [xs | x1 xs].
+  (* palv = pal_even xs *)
+    rewrite -> rev_app. rewrite -> rev_involutive. reflexivity.
+  (* palv = pal_odd x1 xs *)
+    rewrite -> rev_app. simpl. rewrite -> rev_involutive.
+    rewrite -> snoc_cons_app. reflexivity.
+Qed.
+
+
+Inductive pal {X:Type} : list X -> Prop :=
+| pal_0 : pal nil
+| pal_1 : forall (x1:X), pal [x1]
+| pal_next : forall (xs:list X) (xn:X), pal xs -> pal (xn :: snoc xs xn)
+.
+
+Theorem id_plus_rev_pal :
+  forall X (l:list X), pal (l ++ rev l).
+Proof.
+  intros X l.
+  induction l as [| x xs].
+  (* l = [] *) simpl. apply pal_0.
+  (* l = x :: xs *)
+    simpl. rewrite  <- snoc_with_append. apply pal_next. apply IHxs.
+Qed.
+
+Theorem pal_id_rev_eq :
+  forall X (l:list X), pal l -> l = rev l.
+Proof.
+  intros X l palv.
+  induction palv as [| x1 | xs sn palv'].
+  (* l = [] *) reflexivity.
+  (* l = [x1] *) reflexivity.
+  (* l = xn :: snoc xs xn *)
+    simpl. rewrite -> rev_snoc.
+    simpl. rewrite <- IHpalv'.
+    reflexivity. Qed.
 (** [] *)
 
 (*  **** Exercise: 5 stars, optional (palindrome_converse) *)
@@ -2624,6 +3026,25 @@ End P.
      forall l, l = rev l -> pal l.
 ]]
 *)
+
+Theorem palindrome_converse'' :
+  forall X (l:list X), l = rev l -> pal'' l.
+Proof.
+  intros X l. apply pal_rev. Qed.
+
+
+Lemma rev_eq_decrease :
+  forall {X} (x:X) (l:list X), x :: snoc l x = rev (x :: snoc l x) -> l = rev l.
+Proof.
+  intros X x l eq.
+  simpl in eq. rewrite -> rev_snoc in eq. simpl in eq.
+  inversion eq.
+  apply (f_equal rev) in H0.
+  rewrite -> rev_snoc in H0.
+  rewrite -> rev_snoc in H0.
+  inversion H0.
+  rewrite -> rev_involutive in H1.
+  symmetry. apply H1. Qed.
 
 (* FILL IN HERE *)
 (** [] *)
@@ -2695,7 +3116,82 @@ End P.
     - （これは少し難しいですので、任意とします）サブシーケンスという関係は推移的である、つまり、 [l1] が [l2] のサブシーケンスであり、 [l2] が [l3] のサブシーケンスであるなら、 [l1] は [l3] のサブシーケンスである、というような関係であることを証明しなさい。（ヒント：何について帰納法を適用するか、よくよく注意して下さい。）
 *)
 
-(* FILL IN HERE *)
+Inductive subseq : list nat -> list nat -> Prop :=
+| subseq_0 : forall (l:list nat), subseq [] l
+| subseq_tail : forall (x:nat) (l xs:list nat), subseq l xs -> subseq (x::l) (x::xs)
+| subseq_all  : forall (x:nat) (l xs:list nat), subseq l xs -> subseq l (x::xs)
+.
+
+Theorem subseq_refl :
+  forall (l:list nat), subseq l l.
+Proof.
+  induction l as [| x xs IHl].
+  (* [] *) apply subseq_0.
+  (* x::xs *) apply subseq_tail. exact IHl.
+Qed.
+
+Theorem subseq_app :
+  forall (l1 l2 l3:list nat), subseq l1 l2 -> subseq l1 (l2 ++ l3).
+Proof.
+  intros l1 l2 l3 s.
+  induction s as [l | x l xs st IHst | x l xs sa IHsa ].
+  (* 0 *) apply subseq_0.
+  (* tail *) simpl. apply subseq_tail. apply IHst.
+  (* all  *) simpl. apply subseq_all.  apply IHsa.
+Qed.
+
+Theorem subseq_trans :
+  forall (l1 l2 l3:list nat), subseq l1 l2 -> subseq l2 l3 -> subseq l1 l3.
+Proof.
+  intros l1 l2 l3.
+  generalize dependent l2.
+  generalize dependent l1.
+  induction l3 as [| x3 xs3 IHl3].
+  (* [] *)
+    intros l1 l2 H12 H23.
+    inversion H23 as [ys | x ys xs Hst | x ys xs Hsa ].
+    subst l2 ys.
+    inversion H12.
+    exact (subseq_0 []).
+  (* x::xs *)
+    intros l1 l2 H12 H23.
+    inversion H23 as [ys | x ys xs H23st | x ys xs H23sa ].
+    (* 0 *)
+      subst l2 ys.
+      inversion H12. exact (subseq_0 (x3 :: xs3)).
+    (* tail *)
+      subst l2 x3 xs3.
+      inversion H12 as [ys1 | x1 ys1 xs1 H12st | x1 ys1 xs1 H12sa].
+      (* 0 *) subst l1 ys1. exact (subseq_0 (x :: xs)).
+      (* tail *)
+        subst x1 xs1 l1.
+        apply subseq_tail.
+        apply (IHl3 ys1 ys).
+        exact H12st.
+        exact H23st.
+      (* all *)
+        subst x1 xs1 l1.
+        apply subseq_all.
+        apply (IHl3 ys1 ys).
+        exact H12sa.
+        exact H23st.
+
+    (* all *)
+      subst l2 x3 xs3.
+      inversion H12 as [ys1 | x1 ys1 xs1 H12st | x1 ys1 xs1 H12sa].
+      (* 0 *) subst l1 ys1. exact (subseq_0 (x :: xs)).
+      (* tail *)
+        rewrite -> H.
+        apply subseq_all.
+        apply (IHl3 l1 ys).
+        exact H12.
+        exact H23sa.
+      (* all *)
+        apply subseq_all.
+        apply (IHl3 l1 ys).
+        exact H12.
+        exact H23sa.
+Qed.
 (** [] *)
 
 (*  **** Exercise: 2 stars, optional (foo_ind_principle) *)
@@ -2738,6 +3234,18 @@ End P.
 ]]
 
 *)
+
+Module Foo.
+
+Inductive foo (X : Set) (Y : Set) : Set :=
+| foo1 : X -> foo X Y
+| foo2 : Y -> foo X Y
+| foo3 : foo X Y -> foo X Y
+.
+
+Check foo_ind.
+
+End Foo.
 (** [] *)
 
 (** **** 練習問題: ★★, optional (bar_ind_principle) *)
@@ -2777,6 +3285,20 @@ End P.
 ]]
 
 *)
+
+Check (list nat).
+
+Module Bar.
+
+Inductive bar : Set :=
+| bar1 : nat -> bar
+| bar2 : bar -> bar
+| bar3 : bool -> bar -> bar
+.
+
+Check bar_ind.
+
+End Bar.
 (** [] *)
 
 (*  **** Exercise: 2 stars, optional (no_longer_than_ind) *)
@@ -2831,6 +3353,19 @@ End P.
 ]]
 
 *)
+
+Module Ex_no_longer_than_ind.
+
+Inductive no_longer_than (X : Set) : (list X) -> nat -> Prop :=
+| nlt_nil : forall n, no_longer_than X [] n
+| nlt_cons : forall x l n, no_longer_than X l n ->
+                       no_longer_than X (x::l) (S n)
+| nlt_succ : forall l n, no_longer_than X l n ->
+                     no_longer_than X l (S n).
+
+Check no_longer_than_ind.
+
+End Ex_no_longer_than_ind.
 (** [] *)
 
 (*  **** Exercise: 2 stars, optional (R_provability) *)
@@ -2862,4 +3397,26 @@ End P.
     - [R 6 [3,2,1,0]]
 *)
 
+Module R_Provability.
+
+Inductive R : nat -> list nat -> Prop :=
+| c1 : R 0 []
+| c2 : forall n l, R n l -> R (S n) (n :: l)
+| c3 : forall n l, R (S n) l -> R n l.
+
+Example e0 : R 2 [1,0].
+Proof. apply (c2 _ _ (c2 _ _ c1)). Qed.
+
+Example e1 : R 1 [1,2,1,0].
+Proof.
+  apply (c3 _ _
+            (c2 _ _
+                (c3 _ _
+                    (c3 _ _
+                        (c2 _ _
+                            (c2 _ _
+                                (c2 _ _ c1))))))).
+Qed.
+
+End R_Provability.
 (** [] *)

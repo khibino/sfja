@@ -872,9 +872,9 @@ Inductive ExSet : Type :=
           (forall (x : X) (l : list X), P l -> P (x :: l)) ->
           forall l : list X, P l
 ]]
-   この表現（と [list_ind] の全体的な形）に注目してください。帰納法の原理全体が 
+   この表現（と [list_ind] の全体的な形）に注目してください。帰納法の原理全体が
    [X] によってパラメータ化されています。
-   別の見方をすると、[list_ind] は多相関数と考えることができます。この関数は、型 
+   別の見方をすると、[list_ind] は多相関数と考えることができます。この関数は、型
    [X] が適用されると、[list X] に特化した帰納法の原理を返します。 *)
 
 (* **** Exercise: 1 star (tree) *)
@@ -1260,7 +1260,7 @@ Proof.
     attention to only those numbers for which evidence [ev n] could be
     generated.  We'll look at the induction principle of [ev] in more
     depth below, to explain what's really going on. *)
-(** 帰納的に定義された命題に対する帰納法の原理は、帰納的に定義された集合のそれとまったく同じ形をしているわけではありません。 
+(** 帰納的に定義された命題に対する帰納法の原理は、帰納的に定義された集合のそれとまったく同じ形をしているわけではありません。
     今の段階では、根拠 [ev n] に対する帰納法は [n] に対する帰納法に似ているが、 [ev n] が成立する数についてのみ着目することができると直感的に理解しておいて問題ありません。
     [ev] の帰納法の原理をもっと深く見て行き、実際に何を起こっているかを説明します。*)
 
@@ -1330,7 +1330,7 @@ Admitted.
 (* But this doesn't work.  For example, in the first sub-goal, we've
     lost the information that [n] is [0].  The right thing to use
     here, it turns out, is [inversion]: *)
-(** しかし、これはうまくいきません。 例えば、最初のサブゴールにおいて、 [n] が [0] であるという情報が失われてしまいます。 
+(** しかし、これはうまくいきません。 例えば、最初のサブゴールにおいて、 [n] が [0] であるという情報が失われてしまいます。
     ここで使うべきは、 [inversion] です。 *)
 
 Theorem SSev_even : forall n,
@@ -1369,10 +1369,10 @@ Proof.
     これまでは、 [inversion] は等号に関する命題に対して使い、コンストラクタから元のデータを取り出すためか、別のコンストラクタを区別するためににしか使っていませんでした。
     しかし、ここでは [inversion] が 帰納的に定義された命題に対する根拠を分析するためにも使えることを紹介しました。
 
-    ここで、[inversion] が一般にはどのように動作するかを説明します。 
+    ここで、[inversion] が一般にはどのように動作するかを説明します。
     [I] が現在のコンテキストにおいて帰納的に宣言された仮定 [P] を参照しているとします。
     ここで、[inversion I] は、[P]のコンストラクタごとにサブゴールを生成します。 各サブゴールにおいて、 コンストラクタが [P] を証明するのに必要な条件によって [I] が置き換えられます。
-    サブゴールのうちいくつかは矛盾が存在するので、 [inversion] はそれらを除外します。 
+    サブゴールのうちいくつかは矛盾が存在するので、 [inversion] はそれらを除外します。
     残っているのは、元のゴールが成り立つことを示すのに必要なサブゴールです。
 
     先ほどの例で、 [inversion] は [ev (S (S n))] の分析に用いられ、 これはコンストラクタ [ev_SS] を使って構築されていることを判定し、そのコンストラクタの引数を仮定に追加した新しいサブゴールを生成しました。(今回は使いませんでしたが、補助的な等式も生成しています。)
@@ -1536,7 +1536,7 @@ Proof.
 (** **** 練習問題: ★★ (MyProp) *)
 (* Here are two useful facts about MyProp.  The proofs are left
     to you. *)
-(** MyPropに関する便利な2つの事実があります。 
+(** MyPropに関する便利な2つの事実があります。
     証明はあなたのために残してあります。  *)
 
 Theorem MyProp_0 : MyProp 0.
@@ -1585,14 +1585,14 @@ Proof.
     _Theorem_ : 任意の自然数 [n] において、もし [ev n] ならば [MyProp n] が成り立つ。
 
     _Proof_ : [n] を [nat] とし、[ev n] の導出を [E] とします。
-    [MyProp n] の導出を示さなければなりません。 
+    [MyProp n] の導出を示さなければなりません。
     [E] の帰納法について証明を行うので、以下の2つの場合について考えなければなりません。
 
     - [E] の最後のステップが[ev_0]だった場合、 [n] は [0] となる。
-      その場合、[MyProp 0]が成り立つをことを示さなければならない; 
+      その場合、[MyProp 0]が成り立つをことを示さなければならない;
       補題 [MyProp_0] よりこれは真である。
 
-    -  [E] の最後のステップが [ev_SS] だった場合、 [n = S (S n')] となる [n']  が存在し、 [ev n'] の導出が存在する。 
+    -  [E] の最後のステップが [ev_SS] だった場合、 [n = S (S n')] となる [n']  が存在し、 [ev n'] の導出が存在する。
        [MyProp n'] が成り立つという帰納法の仮定を用いて、[MyProp (S (S n'))] を示さなければなりません。
        しかし、補題 [MyProp_plustwo] により、[MyProp n'] を示せば十分であることがわかり、さらにそれは帰納法の仮定そのものです。
 
@@ -1693,7 +1693,7 @@ Proof.
     statement may also involve these inputs). *)
 
 (** どちらのの空間もコンストラクタの無限集合をスタート地点とします。
-    コンストラクタは内部構造を全く持っておらず、ただのアトミックなシンボルです。 
+    コンストラクタは内部構造を全く持っておらず、ただのアトミックなシンボルです。
     例えば、[true], [false], [O], [S], [nil], [cons],
     [ev_0], [ev_SS], ... などです。
 
@@ -1818,7 +1818,7 @@ Proof.
     - Propositions are _types_ in the _logical_ world.  They are
       either _provable_ (i.e., there is some expression that has this
       type) or not (there is no such expression).  It doesn't make
-      sense to say that a proposition is "equivalent to [true]." 
+      sense to say that a proposition is "equivalent to [true]."
 
       We sometimes use the words "true" and "false" informally when
       referring to propositions.  Strictly speaking, this is wrong: a
@@ -1901,7 +1901,7 @@ Proof.
     Q: How much detail is needed?
 
     A: There is no single right answer; rather, there is a range
-       of choices.  
+       of choices.
 
       At one end of the spectrum, we can essentially give the
       reader the whole formal proof (i.e., the informal proof
@@ -1924,7 +1924,7 @@ Proof.
       routine parts to save the reader from spending too much
       time reconstructing these parts (e.g., what the IH says and
       what must be shown in each case of an inductive proof), but
-      not so much detail that the main ideas are obscured. 
+      not so much detail that the main ideas are obscured.
 
    Another key point: if we're talking about a formal proof of a
    proposition P and an informal proof of P, the proposition P doesn't
@@ -2113,7 +2113,7 @@ Proof.
 
            - <他のケースも同様に...>                        []
 *)
-(* 
+(*
     _Example_
 
        - _Theorem_ : The [<=] relation is transitive -- i.e., for all
@@ -2130,7 +2130,7 @@ Proof.
              By induction hypothesis, [n <= o'].
 
              But then, by [le_S], [n <= o].  [] *)
-(**  
+(**
     _Example_
 
        - _Theorem_ : [<=] という関係は推移的である -- すなわち、任意の
@@ -2399,7 +2399,7 @@ Proof. reflexivity.  Qed.
 ]]
     For this reason, Coq actually generates the following simplified
     induction principle for [ev]: *)
-    
+
 (** 最初のほうで、我々は帰納的に定義された「集合」に対して、Coqが生成する
     帰納法の原理をつぶさに見てきました。[ev] のように、帰納的に定義された
     「命題」の帰納法の原理は、やや複雑でした。これらに共通して言えることですが、
@@ -2411,7 +2411,7 @@ Proof. reflexivity.  Qed.
     我々が証明したいものは根拠についての事柄ではなく、数値についての事柄です。
     つまり、我々は根拠をベースに数値の属性を証明できるような帰納法の原理を
     必要としているわけです。
-    
+
     例えば、ずいぶん前にお話ししたように、[ev] の帰納的な定義は、
     こんな感じで...
 [[
@@ -2866,6 +2866,3 @@ End P.
 *)
 
 (** [] *)
-
-
-

@@ -252,7 +252,7 @@ Qed.
     full benefit from the exercises, make sure you also
     understand how to prove them on paper! *)
 (** 以下の事実のほとんどはCoqで証明することは簡単です。
-    練習問題の効果を最大にするため、どのように証明するかを理解していることを紙の上でも確認しなさい! 
+    練習問題の効果を最大にするため、どのように証明するかを理解していることを紙の上でも確認しなさい!
     *)
 
 (* **** Exercise: 2 stars *)
@@ -344,7 +344,7 @@ Proof with eauto.
     それには2つの理由があります。
     1つはレコード型が対応する項の正確な構造を記述する必要がなくなることです。
     2つ目は、[has_type]の導出に関する帰納法を使う推論が一般には難しくなることです。
-    なぜなら、[has_type]が構文指向ではなくなるからです。 *)    
+    なぜなら、[has_type]が構文指向ではなくなるからです。 *)
 
 Lemma rcd_types_match : forall S T i Ti,
   subtype S T ->
@@ -364,15 +364,18 @@ Proof with (eauto using wf_rcd_lookup).
     rename i0 into k.
     unfold ty_lookup. unfold ty_lookup in Hget.
     remember (beq_id i k) as b. destruct b...
+                                (* destruct b. *)
     SCase "i = k -- we're looking up the first field".
       inversion Hget. subst. exists S1...
+      (* inversion Hget. subst. exists S1. split. reflexivity. assumption.
+         fold ty_lookup. fold ty_lookup in Hget. apply IHHsub2. exact Hget. *)
   Case "S_RcdPerm".
     exists Ti. split.
     SCase "lookup".
       unfold ty_lookup. unfold ty_lookup in Hget.
-      remember (beq_id i i1) as b. destruct b...
+      remember (beq_id i i1) as b. (* destruct b... *) destruct b; info_eauto.
       SSCase "i = i1 -- we're looking up the first field".
-        remember (beq_id i i2) as b. destruct b...
+        remember (beq_id i i2) as b. (* destruct b... *) destruct b; info_eauto.
         SSSCase "i = i2 - -contradictory".
           destruct H0.
           apply beq_id_eq in Heqb. apply beq_id_eq in Heqb0.
@@ -386,7 +389,43 @@ Proof with (eauto using wf_rcd_lookup).
     lemma. *)
 (** [rcd_types_match]補題の非形式的証明を注意深く記述しなさい。 *)
 
-(* FILL IN HERE *)
+(*
+Lemma rcd_types_match : forall S T i Ti,
+  subtype S T ->
+  ty_lookup i T = Some Ti ->
+  exists Si, ty_lookup i S = Some Si /\ subtype Si Ti.
+ *)
+
+(*
+
+命題:
+  S が T のサブタイプであって、
+  レコード型 T の各フィールドiの型が Ti であるとき、
+  ある型 Si があって、それはレコード型 S の フィールドiの型でありかつ、
+  Si が Ti のサブタイプになる。
+
+証明:
+  SのTに対するサブタイプ関係についての帰納法で示す。
+  S_Refl の場合は S が T に等しいので、Si も Ti と等しく、自明。
+  矛盾するケースを除くと興味のある場合は以下の場合である。
+
+  S_Trans のときは帰納法の仮定から、
+  T のサブタイプであり、かつ、S のスーパータイプであるレコード U があって、
+  U の i番目の型が Ui となる。この Ui は Ti のサブタイプとなる。
+  また、そのような Ui に対して、ある Si があって、
+  S の i番目の型が Si となる。この Si は Ui のサブタイプとなる。
+  この Si は推移律から Ti のサブタイプにもなって成り立つ。
+
+  S_RcdDepth で T 先頭のフィールドが i でないとき、帰納法の仮定から成立
+  S_RcdDepth で T 先頭のフィールドが i のとき、
+  T 先頭のフィールドの型を T1, S の先頭のフィールドの型を S1 とする。
+  Ti は先頭のフィールドの型 T1 となる。
+  Si として S1 が存在し、成立する。
+
+  S_RcdPerm
+
+
+ *)
 (** [] *)
 
 (* *** Inversion Lemmas *)
@@ -402,7 +441,31 @@ Proof with eauto.
   intros U V1 V2 Hs.
   remember (ty_arrow V1 V2) as V.
   generalize dependent V2. generalize dependent V1.
-  (* FILL IN HERE *) Admitted.
+
+  subtype_cases (induction Hs) Case
+  ; intros V1 V2 VA
+  ; try solve by inversion.
+  Case "S_Refl".
+    exists V1. exists V2.
+    split.
+      assumption.
+      split;
+      constructor;
+      rewrite VA in H;
+      inversion H; subst;
+      assumption.
+  Case "S_Trans".
+    destruct (IHHs2 V1 V2 VA) as [ U1 [ U2 [ UA [] ] ] ].
+    destruct (IHHs1 U1 U2 UA) as [ S1 [ S2 [ SA [] ] ] ].
+    exists S1. exists S2.
+    now eauto.
+  Case "S_Arrow".
+    inversion VA; subst.
+    exists S1. exists S2.
+    now eauto.
+Qed.
+
+(* [] *)
 
 (* ###################################################################### *)
 (* * Typing *)
@@ -713,7 +776,7 @@ Proof with eauto.
 
           - そうでなければ[t2]は値である。補題[canonical_forms_for_arrow_types]により、
             ある[x]、[S1]、[s2]について [t1 = \x:S1.s2] である。
-            すると[t2]が値であることから、[ST_AppAbs]により 
+            すると[t2]が値であることから、[ST_AppAbs]により
             [(\x:S1.s2) t2 ==> [t2/x]s2] となる。
 
       - 導出の最後のステップが[T_Proj]の適用だった場合、
@@ -733,7 +796,7 @@ Proof with eauto.
         導出の一部である型付け導出の帰納法の仮定から求める結果がすぐに得られる。
 
       - 導出の最後のステップが[T_RCons]の適用だった場合、
-        項[t1] [tr]、型 [T1 Tr]、ラベル[i]が存在して 
+        項[t1] [tr]、型 [T1 Tr]、ラベル[i]が存在して
         [t = {i=t1, tr}]、[T = {i:T1, Tr}]、[record_tm tr]、
         [record_tm Tr]、[empty |- t1 : T1]、[empty |- tr : Tr] となる。
 
@@ -747,7 +810,7 @@ Proof with eauto.
         - そうではないとき、[t1]は値である。
 
           - ある項[tr']について [tr ==> tr'] とする。
-            すると[t1]が値であることから、規則[ST_Rcd_Tail]より 
+            すると[t1]が値であることから、規則[ST_Rcd_Tail]より
             [{i=t1, tr} ==> {i=t1, tr'}] となる。
 
           - そうではないとき、[tr]も値である。すると、[v_rcons]から [{i=t1, tr}] は値である。
@@ -1186,7 +1249,7 @@ Proof with eauto.
                             Gamma |- t : T1->T2
 ]]
 
-    - 次の簡約規則を追加する:    
+    - 次の簡約規則を追加する:
 [[
                              ------------------                     (ST_Funny21)
                              {} ==> (\x:Top. x)
@@ -1228,5 +1291,3 @@ Proof with eauto.
 
 []
 *)
-
-

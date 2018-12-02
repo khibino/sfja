@@ -443,26 +443,30 @@ Proof with eauto.
   generalize dependent V2. generalize dependent V1.
 
   subtype_cases (induction Hs) Case
-  ; intros V1 V2 VA
-  ; try solve by inversion.
-  Case "S_Refl".
+  ; intros V1 V2 VA.
+  * (* S_Refl *)
     exists V1. exists V2.
     split.
-      assumption.
-      split;
-      constructor;
-      rewrite VA in H;
-      inversion H; subst;
-      assumption.
-  Case "S_Trans".
+    + assumption.
+    + rewrite VA in H. inversion H; subst.
+      split;  constructor; assumption.
+  * (* S_Trans *)
     destruct (IHHs2 V1 V2 VA) as [ U1 [ U2 [ UA [] ] ] ].
     destruct (IHHs1 U1 U2 UA) as [ S1 [ S2 [ SA [] ] ] ].
     exists S1. exists S2.
     now eauto.
-  Case "S_Arrow".
+  * (* S_Top *)
+    now inversion VA.
+  * (* S_Arrow *)
     inversion VA; subst.
     exists S1. exists S2.
     now eauto.
+  * (* S_RcdWidth *)
+    now inversion VA.
+  * (* S_RcdDepth *)
+    now inversion VA.
+  * (* S_RcdPerm *)
+    now inversion VA.
 Qed.
 
 (* [] *)

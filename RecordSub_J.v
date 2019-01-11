@@ -373,9 +373,9 @@ Proof with (eauto using wf_rcd_lookup).
     exists Ti. split.
     SCase "lookup".
       unfold ty_lookup. unfold ty_lookup in Hget.
-      remember (beq_id i i1) as b. (* destruct b... *) destruct b; info_eauto.
+      remember (beq_id i i1) as b. destruct b...
       SSCase "i = i1 -- we're looking up the first field".
-        remember (beq_id i i2) as b. (* destruct b... *) destruct b; info_eauto.
+        remember (beq_id i i2) as b. destruct b...
         SSSCase "i = i2 - -contradictory".
           destruct H0.
           apply beq_id_eq in Heqb. apply beq_id_eq in Heqb0.
@@ -400,31 +400,36 @@ Lemma rcd_types_match : forall S T i Ti,
 
 命題:
   S が T のサブタイプであって、
-  レコード型 T の各フィールドiの型が Ti であるとき、
-  ある型 Si があって、それはレコード型 S の フィールドiの型でありかつ、
+  レコード型 T の各フィールド i の型が Ti であるとき、
+  ある型 Si があって、それはレコード型 S の フィールド i の型でありかつ、
   Si が Ti のサブタイプになる。
 
 証明:
   SのTに対するサブタイプ関係についての帰納法で示す。
-  S_Refl の場合は S が T に等しいので、Si も Ti と等しく、自明。
+
+  S_Refl (反射律) の場合は S が T に等しいので、Si も Ti と等しく、自明。
   矛盾するケースを除くと興味のある場合は以下の場合である。
 
-  S_Trans のときは帰納法の仮定から、
+  S_Trans (推移律) のときは帰納法の仮定から、
   T のサブタイプであり、かつ、S のスーパータイプであるレコード U があって、
-  U の i番目の型が Ui となる。この Ui は Ti のサブタイプとなる。
+  U のフィールド i の型が Ui となる。この Ui は Ti のサブタイプとなる。
   また、そのような Ui に対して、ある Si があって、
-  S の i番目の型が Si となる。この Si は Ui のサブタイプとなる。
+  S の フィールド i の型が Si となる。この Si は Ui のサブタイプとなる。
   この Si は推移律から Ti のサブタイプにもなって成り立つ。
 
-  S_RcdDepth で T 先頭のフィールドが i でないとき、帰納法の仮定から成立
-  S_RcdDepth で T 先頭のフィールドが i のとき、
+  S_RcdDepth (S, T ともレコードで、レコードの先頭フィールドと残りがそれぞれサブタイプ関係) のときは、
+  T 先頭のフィールドが i でないときと i のときに場合分けする。
+  先頭のフィールドが i でないとき、帰納法の仮定から成立
+  先頭のフィールドが i のとき、
   T 先頭のフィールドの型を T1, S の先頭のフィールドの型を S1 とする。
   Ti は先頭のフィールドの型 T1 となる。
   Si として S1 が存在し、成立する。
 
-  S_RcdPerm
-
-
+  S_RcdPerm (S, T ともレコードで、S は T の先頭の 2 つのフィールド i1 と i2 を交換したもの) のとき、
+  このときは S_RcdPerm のサブタイプの定義から i1 <> i2 が仮定される。
+  次の 3通りの場合(i = i1 かつ i <> i2, i <> i1 かつ i = i2, i <> i1 かつ i <> i2)
+  は Si として Ti が存在し、成立。(フィールドと型の対応は変わらない)
+  i = i1 かつ i = i2 のときは i1 = i2 となり i1 <> i2 と矛盾し、否定的に証明される。
  *)
 (** [] *)
 

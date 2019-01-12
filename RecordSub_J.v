@@ -642,7 +642,25 @@ Lemma canonical_forms_of_arrow_types : forall Gamma s T1 T2,
      exists x, exists S1, exists s2,
         s = tm_abs x S1 s2.
 Proof with eauto.
-  (* FILL IN HERE *) Admitted.
+  intros Gamma s T1 T2 HT Vs.
+  remember (ty_arrow T1 T2) as T.
+  generalize dependent T2.
+  generalize dependent T1.
+  induction HT.
+  + now inversion Vs.
+  + exists x. exists T11. exists t12. reflexivity.
+  + now inversion Vs.
+  + now inversion Vs.
+  + intros T1 T2 ET.
+    rewrite ET in H.
+    apply sub_inversion_arrow in H.
+    destruct H as [ U1 [ U2 [ SA ] ] ].
+    apply IHHT with U1 U2.
+    - assumption.
+    - assumption.
+  + intros T1 T2 N. now inversion N.
+  + now inversion Vs.
+Qed.
 (** [] *)
 
 Theorem progress : forall t T,
